@@ -7,19 +7,19 @@ services:
             context: .
             dockerfile: Dockerfile
         restart: unless-stopped
-        container_name: app
+        container_name: app-laravel
         working_dir: /var/www/
         volumes:
             - ./:/var/www
         depends_on:
             - redis
         networks:
-            - laravel-10
+            - laravel
 
     # nginx
     nginx:
         image: nginx:alpine
-        container_name: nginx
+        container_name: nginx-php-laravel
         restart: unless-stopped
         ports:
             - "8989:80"
@@ -27,12 +27,12 @@ services:
             - ./:/var/www
             - ./docker/nginx/:/etc/nginx/conf.d/
         networks:
-            - laravel-10
+            - laravel
 
     # db mysql
     db:
         image: mysql:5.7.22
-        container_name: db
+        container_name: db-laravel
         restart: unless-stopped
         environment:
             MYSQL_DATABASE: ${DB_DATABASE:-laravel}
@@ -44,13 +44,13 @@ services:
         ports:
             - "3306:3306"
         networks:
-            - laravel-10
+            - laravel
     #phpmyadmin
     db-phpmyadmin:
         depends_on:
             - db
         image: phpmyadmin:apache
-        container_name: db-phpmyadmin
+        container_name: db-phpmyadmin-laravel
         restart: always
         ports:
             - 8080:80
@@ -60,12 +60,12 @@ services:
             PMA_HOST: db
             UPLOAD_LIMIT: 256M
         networks:
-            - laravel-10
+            - laravel
 
     # queue
     queue:
         image: especializati/laravel9-app
-        container_name: queue
+        container_name: queue-laravel
         restart: unless-stopped
         command: "php artisan queue:work"
         volumes:
@@ -74,15 +74,15 @@ services:
             - redis
             - app
         networks:
-            - laravel-10
+            - laravel
 
     # redis
     redis:
         image: redis:latest
-        container_name: redis
+        container_name: redis-laravel
         networks:
-            - laravel-10
+            - laravel
 
 networks:
-    laravel-10:
+    laravel:
         driver: bridge
